@@ -38,7 +38,8 @@ object LineOfSight {
     var maxtg = input(0)
     output(0) = 0
     while (i < input.length) {
-      output(1) = max(maxtg, input(i) / i)
+      maxtg = max(maxtg, input(i) / i)
+      output(i) = maxtg
       i += 1
     }
   }
@@ -56,10 +57,10 @@ object LineOfSight {
   /** Traverses the specified part of the array and returns the maximum angle.
     */
   def upsweepSequential(input: Array[Float], from: Int, until: Int): Float = {
-    var i = from + 1
-    var maxtg = input(from)
+    var i = from+1
+    var maxtg = input(from)/from
     while (i < until) {
-      maxtg = max(maxtg, input(i))
+      maxtg = max(maxtg, input(i)/i)
       i += 1
     }
     maxtg
@@ -93,7 +94,7 @@ object LineOfSight {
     var maxtg = startingAngle
     var i = from
     while (i < until) {
-      maxtg = max(startingAngle, input(i)/i)
+      maxtg = max(maxtg, input(i)/i)
       output(i) = maxtg
       i += 1
     }
@@ -106,7 +107,7 @@ object LineOfSight {
   def downsweep(input: Array[Float], output: Array[Float], startingAngle: Float,
                 tree: Tree): Unit = {
     tree match {
-      case Node(l, r) => parallel(downsweep(input, output, l.maxPrevious, l),
+      case Node(l, r) => parallel(downsweep(input, output, startingAngle, l),
                                   downsweep(input, output, max(startingAngle, l.maxPrevious), r))
       case Leaf(from, until, _) => downsweepSequential(input, output, startingAngle, from, until)
     }
@@ -115,7 +116,7 @@ object LineOfSight {
   /** Compute the line-of-sight in parallel. */
   def parLineOfSight(input: Array[Float], output: Array[Float],
                      threshold: Int): Unit = {
-    val upsweepTree = upsweep(input, 0, input.length, threshold)
+    val upsweepTree = upsweep(input, 1, input.length, threshold)
     downsweep(input, output, 0, upsweepTree)
   }
 }
